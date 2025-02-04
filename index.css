@@ -1,0 +1,309 @@
+/* CSS reset - Don't modify */
+*, *::before, *::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	text-size-adjust: none;
+}
+
+body {
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+img, picture, video, canvas, svg {
+	display: block;
+	max-width: 100%;
+}
+
+input, button, textarea, select {
+	font: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-align: center;
+	font-weight: 650;
+	text-wrap: balance;
+	overflow-wrap: break-word;
+}
+
+[hidden] {
+	display: none !important;
+}
+/* End of CSS reset */
+
+/* Constants */
+:root {
+	--platform-tilt: rotateX(65deg);
+
+	--obstacle-width: 90%;
+	--obstacle-height: 16rem;
+	--obstacle-depth: 6rem;
+
+	--player-width: 6rem;
+	--player-height: 6rem;
+	--player-depth: 18rem;
+}
+
+/* Applies a custom font and centers the page using a grid layout. */
+html {
+	font-family: "Playpen Sans", fantasy;
+	font-size: clamp(12px, 0.5vw + 9.6px, 16px);
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-items: center;
+	background-color: #97cffa;
+	overflow: hidden;
+}
+
+body, main {
+	display: contents;
+}
+
+section {
+	background-color: #a7d6fb;
+	position: relative;
+	padding: 2rem;
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-items: center stretch;
+	gap: 1.5rem;
+	max-width: 60rem;
+	max-height: 40rem;
+	overflow: hidden;
+}
+
+h1 {
+	font-size: 300%;
+}
+
+h2, h3 {
+	font-size: 200%;
+}
+
+button {
+	appearance: none;
+	border: none;
+	background-color: transparent;
+	color: white;
+	font-size: 350%;
+	font-weight: 500;
+	transition: color 0.3s;
+	cursor: pointer;
+	&:hover {
+		color: #e0f1fc;
+	}
+}
+
+button.themed-btn {
+	appearance: none;
+	border: 2px solid rgba(0, 0, 0, 0.3);
+	padding: 0.5rem 2rem;
+	border-radius: 1rem;
+	background-color: #fffdc8;
+	color: #423811;
+	font-size: 250%;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	transition: background-color 0.3s, box-shadow 0.3s;
+	cursor: pointer;
+	&:enabled:hover {
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		background-color: #f7f275;
+	}
+	&:disabled {
+		cursor: not-allowed;
+		background-color: #d6d498;
+	}
+}
+
+#btn-back, #btn-exit {
+	position: absolute;
+	top: 1.5rem;
+	left: 1.5rem;
+	width: 4rem;
+	height: 4rem;
+	line-height: 1;
+}
+
+#top-page {
+	align-content: center;
+}
+
+#game-page {
+	align-items: stretch;
+}
+
+#levels-page {
+	align-content: start;
+}
+
+#levels-list {
+	display: flex;
+	gap: 1rem;
+}
+
+#levels-list button {
+	padding: 0;
+	width: 6rem;
+	height: 6rem;
+}
+
+/* ------------------------------ */
+
+#game-info {
+	position: absolute;
+	top: 2rem;
+	right: 2.5rem;
+	color: white;
+	font-size: 250%;
+	font-weight: 650;
+	text-align: right;
+}
+
+#level, #score {
+	font-weight: normal;
+}
+
+#stage {
+	position: absolute;
+	top: 0;
+	left: 10%;
+	width: 80%;
+	height: 100%;
+	perspective: 100rem;
+	perspective-origin: bottom center;
+}
+
+#platform-background {
+	position: absolute;
+	inset: -9999px 0 0;
+	background-color: #f4cf3d;
+	transform: var(--platform-tilt);
+	transform-style: preserve-3d;
+	transform-origin: bottom center;
+}
+
+#platform {
+	position: absolute;
+	inset: 0;
+	transform-style: preserve-3d;
+	transform-origin: bottom center;
+}
+
+#player, .obstacle {
+	position: absolute;
+	left: calc(var(--lane-index) / var(--n-lanes) * 100%);
+	width: calc(100% / var(--n-lanes));
+	display: flex;
+	justify-content: center;
+	transform-style: preserve-3d;
+}
+
+#player {
+	bottom: 1rem;
+}
+@keyframes blink {
+	0%, 100% {
+		visibility: visible;
+	}
+	50% {
+		visibility: hidden;
+	}
+}
+
+#player.blink {
+	animation: blink 0.4s steps(1, end) 3;
+}
+
+#player-inner {
+	width: var(--player-width);
+	height: var(--player-height);
+	background-color: white;
+	border-radius: 50%;
+}
+
+.obstacle {
+	transform: translateZ(calc(var(--obstacle-height) / 2));
+}
+
+.obstacle-face {
+	position: absolute;
+	padding: 0.5rem;
+	background-color: rgba(230, 85, 243, 0.5);
+	font-size: 200%;
+	color: white;
+	text-align: center;
+	transform-style: preserve-3d;
+	/* backface-visibility: hidden; */
+	/* box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2); */
+	--translateY: translateY(calc(var(--obstacle-height) / 2 - var(--obstacle-depth)));
+}
+
+.obstacle-face-front {
+	width: var(--obstacle-width);
+	height: var(--obstacle-height);
+	transform: rotateX(-90deg);
+}
+
+.obstacle-face-back {
+	width: var(--obstacle-width);
+	height: var(--obstacle-height);
+	transform: rotateX(90deg) translateZ(var(--obstacle-depth));
+}
+
+.obstacle-face-top {
+	width: var(--obstacle-width);
+	height: var(--obstacle-depth);
+	transform: var(--translateY) translateZ(calc(var(--obstacle-height) / 2));
+}
+
+.obstacle-face-bottom {
+	width: var(--obstacle-width);
+	height: var(--obstacle-depth);
+	transform: var(--translateY) rotateY(180deg) translateZ(calc(var(--obstacle-height) / 2));
+}
+
+.obstacle-face-left {
+	width: var(--obstacle-height);
+	height: var(--obstacle-depth);
+	transform: var(--translateY) translateX(calc(-3 / 2 / var(--n-lanes) * var(--obstacle-width))) rotateY(-90deg);
+}
+
+.obstacle-face-right {
+	width: var(--obstacle-height);
+	height: var(--obstacle-depth);
+	transform: var(--translateY) translateX(calc(3 / 2 / var(--n-lanes) * var(--obstacle-width))) rotateY(90deg);
+}
+
+.correct-word .obstacle-face {
+	background-color: rgba(85, 243, 140, 0.5);
+}
+
+#level-completed-modal {
+	background-color: rgba(105, 165, 211, 0.7);
+	color: white;
+	z-index: 1;
+	margin: 4rem;
+	padding: 4rem;
+	border-radius: 1rem;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 2rem;
+}
+
+#level-completed-actions {
+	display: flex;
+	gap: 1rem;
+}
+
+#level-completed-actions button {
+	flex: 1;
+	font-size: 200%;
+}

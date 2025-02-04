@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Obstacle Course Game</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Playpen+Sans:wght@100..800&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="./index.css" />
+	</head>
+	<body>
+		<main>
+			<section id="top-page">
+				<h1>Obstacle Course Game</h1>
+				<button id="btn-start" class="themed-btn">Start</button>
+				<button id="btn-levels" class="themed-btn">Levels</button>
+			</section>
+			<section id="game-page" hidden>
+				<button id="btn-exit" title="Exit">×</button>
+				<div id="game-info">
+					<div>Level: <span id="level">1</span></div>
+					<div>Score: <span id="score">0</span></div>
+				</div>
+				<div id="stage">
+					<div id="platform-background"></div>
+					<div id="platform"></div>
+					<div id="player">
+						<div id="player-inner"></div>
+					</div>
+				</div>
+				<div id="level-completed-modal" hidden>
+					<h3 id="level-completed-title">Level Completed!</h3>
+					<div id="level-completed-actions">
+						<button id="btn-retry" class="themed-btn">↺ Retry</button>
+						<button id="btn-next-level" class="themed-btn">Next Level »</button>
+						<button id="btn-back-to-top" class="themed-btn" hidden>✅ Back to Top</button>
+					</div>
+				</div>
+			</section>
+			<section id="levels-page" hidden>
+				<button id="btn-back" title="Back">‹</button>
+				<h2>Stages</h2>
+				<div id="levels-list"></div>
+			</section>
+		</main>
+		<script src="./index.js" type="module"></script>
+	</body>
+</html>
