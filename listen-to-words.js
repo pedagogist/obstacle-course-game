@@ -1,15 +1,78 @@
-const googleCloudApiKey = "YOUR_GOOGLE_CLOUD_API_KEY";
+// Use API key from URL query if available
+const googleCloudApiKey = new URLSearchParams(location.search).get("apiKey");
 const speechRecognitionApiUrl = `https://speech.googleapis.com/v1/speech:recognize?key=${googleCloudApiKey}`;
 
-const audioInputStream = await navigator.mediaDevices.getUserMedia({
-	audio: { channelCount: 1, sampleRate: 16000, sampleSize: 16 },
-});
+let audioInputStream;
 
 const speakingThreshold = -15;
 const silenceThreshold = -20;
 const silenceDuration = 0.5;
 
-export default function listenToWords(words) {
+export default async function listenToWords(words) {
+	// Check if we should use the browser's Speech Recognition API
+	if (googleCloudApiKey) {
+		audioInputStream ||= await navigator.mediaDevices.getUserMedia({
+			audio: { channelCount: 1, sampleRate: 16000, sampleSize: 16 },
+		});
+		return useGoogleCloudSpeechRecognition(words);
+	} else if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+		return useBrowserSpeechRecognition(words);
+	} else {
+		alert("Your browser does not support speech recognition. ");
+		return Promise.reject(new Error("Speech Recognition API is not supported in this browser"));
+	}
+}
+
+function useBrowserSpeechRecognition(words) {
+	const { promise, resolve, reject } = Promise.withResolvers();
+	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+	const recognition = new SpeechRecognition();
+	recognition.lang = "en-GB";
+	// These lines help produce instant and more fuzzy results for higher possibility of matching words
+	recognition.continuous = true;
+	recognition.interimResults = true;
+	recognition.maxAlternatives = 5;
+
+	if (words?.length) {
+		// Some browsers may support grammar lists in the future for better accuracy
+		const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+		if (SpeechGrammarList) {
+			const grammarList = new SpeechGrammarList();
+			grammarList.addFromString(`#JSGF V1.0; grammar words; public <word> = ${words.join(" | ")} ;`, 1);
+			recognition.grammars = grammarList;
+		} else {
+			console.warn("SpeechGrammarList is not supported");
+		}
+	}
+
+	recognition.addEventListener("result", event => {
+		for (const result of event.results) {
+			for (const alternative of result) {
+				// Remove punctuation and symbols except apostrophes, only keep letters, marks and numbers
+				for (const word of alternative.transcript.toLowerCase().split(/[[^\p{L}\p{M}\p{N}]--']+/v)) {
+					if (words.includes(word)) {
+						resolve(word);
+						recognition.stop();
+					}
+				}
+			}
+		}
+	});
+
+	recognition.addEventListener("error", event => {
+		reject(new Error(`Speech recognition error: ${event.error}`));
+	});
+
+	recognition.addEventListener("end", () => {
+		resolve(null);
+	});
+
+	recognition.start();
+
+	return promise;
+}
+
+function useGoogleCloudSpeechRecognition(words) {
 	const audioContext = new AudioContext();
 	const source = audioContext.createMediaStreamSource(audioInputStream);
 	const analyser = audioContext.createAnalyser();

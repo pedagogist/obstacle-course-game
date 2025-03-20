@@ -1,5 +1,5 @@
 import example from "./data/example.json" with { type: "json" };
-// import listenToWords from "./listen-to-words.js";
+import listenToWords from "./listen-to-words.js";
 
 const sectionDepth = 120;
 const slowMovingSpeed = 0.2;
@@ -119,6 +119,7 @@ function setupStageAndStart() {
 	positionPlayer();
 
 	requestAnimationFrame(updateGameState);
+	startSpeechRecognition();
 }
 
 function positionPlayer() {
@@ -142,6 +143,7 @@ function updateGameState() {
 			if (currentSection < currentLevelData.length) {
 				positionPlayer();
 				currentSectionCorrect = false;
+				startSpeechRecognition();
 			} else {
 				if (currentLevel < example.length) {
 					btnNextLevel.hidden = false;
@@ -175,6 +177,31 @@ function updateGameState() {
 	requestAnimationFrame(updateGameState);
 }
 
+async function startSpeechRecognition() {
+	if (currentSectionCorrect) return;
+	try {
+		const currentWords = currentLevelData[currentSection].map(word => word.trim().toLowerCase());
+		let recognizedWord;
+		while (!(recognizedWord = await listenToWords(currentWords)));
+		recognizedWord = recognizedWord.trim().toLowerCase();
+		const recognizedWordIndex = currentWords.indexOf(recognizedWord);
+		if (recognizedWordIndex !== -1) {
+			player.style.setProperty("--lane-index", recognizedWordIndex);
+			if (recognizedWordIndex === currentCorrectIndices[currentSection]) {
+				score += 10;
+				scoreElement.textContent = score;
+				currentSectionCorrect = true;
+				return;
+			}
+		}
+		return startSpeechRecognition();
+	} catch (error) {
+		console.error(error);
+		return startSpeechRecognition();
+	}
+}
+
+/*
 // For debugging
 document.addEventListener("keydown", event => {
 	if (currentSectionCorrect) return;
@@ -189,6 +216,7 @@ document.addEventListener("keydown", event => {
 		}
 	}
 });
+*/
 
 function shuffleAndReturnFirstIndex(array) {
 	let firstIndex = 0; // The first element is always the correct word
