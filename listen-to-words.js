@@ -8,22 +8,22 @@ const speakingThreshold = -15;
 const silenceThreshold = -20;
 const silenceDuration = 0.5;
 
-export default async function listenToWords(words) {
+export default async function listenToWords(words, abortSignal) {
 	// Check if we should use the browser's Speech Recognition API
 	if (googleCloudApiKey) {
 		audioInputStream ||= await navigator.mediaDevices.getUserMedia({
 			audio: { channelCount: 1, sampleRate: 16000, sampleSize: 16 },
 		});
-		return useGoogleCloudSpeechRecognition(words);
+		return useGoogleCloudSpeechRecognition(words, abortSignal);
 	} else if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-		return useBrowserSpeechRecognition(words);
+		return useBrowserSpeechRecognition(words, abortSignal);
 	} else {
 		alert("Your browser does not support speech recognition. ");
 		return Promise.reject(new Error("Speech Recognition API is not supported in this browser"));
 	}
 }
 
-function useBrowserSpeechRecognition(words) {
+function useBrowserSpeechRecognition(words, abortSignal) {
 	const { promise, resolve, reject } = Promise.withResolvers();
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	const recognition = new SpeechRecognition();
@@ -43,6 +43,14 @@ function useBrowserSpeechRecognition(words) {
 		} else {
 			console.warn("SpeechGrammarList is not supported");
 		}
+	}
+
+	// Handle abort signal
+	if (abortSignal) {
+		abortSignal.addEventListener("abort", () => {
+			recognition.stop();
+			reject(new DOMException("Speech recognition was aborted", "AbortError"));
+		});
 	}
 
 	recognition.addEventListener("result", event => {
@@ -72,7 +80,7 @@ function useBrowserSpeechRecognition(words) {
 	return promise;
 }
 
-function useGoogleCloudSpeechRecognition(words) {
+function useGoogleCloudSpeechRecognition(words, abortSignal) {
 	const audioContext = new AudioContext();
 	const source = audioContext.createMediaStreamSource(audioInputStream);
 	const analyser = audioContext.createAnalyser();
@@ -91,6 +99,18 @@ function useGoogleCloudSpeechRecognition(words) {
 		audioContext.close();
 	});
 	mediaRecorder.addEventListener("error", reject);
+
+	// Handle abort signal
+	if (abortSignal) {
+		abortSignal.addEventListener("abort", () => {
+			mediaRecorder.stop();
+			cancelAnimationFrame(monitorVolume);
+			audioContext.close();
+			clearTimeout(silenceTimeout);
+			reject(new DOMException("Speech recognition was aborted", "AbortError"));
+		});
+	}
+
 	mediaRecorder.start();
 	requestAnimationFrame(monitorVolume);
 

@@ -31,6 +31,9 @@ btnLevels.addEventListener("click", () => {
 });
 
 btnExit.addEventListener("click", () => {
+	// Abort any ongoing speech recognition
+	speechRecognitionAbortController?.abort();
+
 	gamePage.hidden = true;
 	topPage.hidden = false;
 });
@@ -58,6 +61,9 @@ btnNextLevel.addEventListener("click", () => {
 });
 
 btnBackToTop.addEventListener("click", () => {
+	// Abort any ongoing speech recognition
+	speechRecognitionAbortController?.abort();
+
 	levelCompletedModal.hidden = true;
 	topPage.hidden = false;
 	gamePage.hidden = true;
@@ -77,8 +83,13 @@ let currentLevelData;
 let currentSection = 0;
 let currentNLanes = 0;
 let currentCorrectIndices = [];
+let speechRecognitionAbortController;
 
 function setupStageAndStart() {
+	// Abort any ongoing speech recognition
+	speechRecognitionAbortController?.abort();
+	speechRecognitionAbortController = new AbortController();
+
 	levelElement.textContent = currentLevel;
 	score = 0;
 	scoreElement.textContent = 0;
@@ -145,6 +156,9 @@ function updateGameState() {
 				currentSectionCorrect = false;
 				startSpeechRecognition();
 			} else {
+				// Level completed - abort speech recognition
+				speechRecognitionAbortController?.abort();
+
 				if (currentLevel < example.length) {
 					btnNextLevel.hidden = false;
 					btnBackToTop.hidden = true;
@@ -182,7 +196,7 @@ async function startSpeechRecognition() {
 	try {
 		const currentWords = currentLevelData[currentSection].map(word => word.trim().toLowerCase());
 		let recognizedWord;
-		while (!(recognizedWord = await listenToWords(currentWords)));
+		while (!(recognizedWord = await listenToWords(currentWords, speechRecognitionAbortController.signal)));
 		recognizedWord = recognizedWord.trim().toLowerCase();
 		const recognizedWordIndex = currentWords.indexOf(recognizedWord);
 		if (recognizedWordIndex !== -1) {
@@ -196,6 +210,10 @@ async function startSpeechRecognition() {
 		}
 		return startSpeechRecognition();
 	} catch (error) {
+		// Don't restart if the error is due to abortion
+		if (error.name === "AbortError") {
+			return;
+		}
 		console.error(error);
 		return startSpeechRecognition();
 	}
