@@ -92,7 +92,7 @@ function setupStageAndStart() {
 		const correctWordIndex = shuffleAndReturnFirstIndex(words);
 		currentCorrectIndices[sectionIndex] = correctWordIndex;
 
-		words.forEach((word, wordIndex) => {
+		for (const [wordIndex, word] of words.entries()) {
 			const obstacle = document.createElement("div");
 			obstacle.classList.add("obstacle");
 			obstacle.classList.toggle("correct-word", wordIndex === correctWordIndex);
@@ -102,15 +102,15 @@ function setupStageAndStart() {
 			platform.appendChild(obstacle);
 
 			const faces = ["front", "back", "left", "right", "top", "bottom"];
-			faces.forEach(faceName => {
+			for (const faceName of faces) {
 				const face = document.createElement("div");
 				face.classList.add("obstacle-face", `obstacle-face-${faceName}`);
 				// if (faceName === "front") {
 				face.textContent = word;
 				// }
 				obstacle.appendChild(face);
-			});
-		});
+			}
+		}
 
 		return words;
 	});

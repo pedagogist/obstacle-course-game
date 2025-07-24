@@ -7,6 +7,7 @@
 
 html {
 	text-size-adjust: none;
+	interpolate-size: allow-keywords;
 }
 
 body {
@@ -20,7 +21,19 @@ img, picture, video, canvas, svg {
 }
 
 input, button, textarea, select {
+	box-sizing: inherit;
+	color: inherit;
 	font: inherit;
+	line-height: inherit;
+}
+
+button {
+	appearance: none;
+	border: none;
+	background: none;
+	margin: 0;
+	padding: 0;
+	cursor: pointer;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -87,21 +100,16 @@ h2, h3 {
 }
 
 button {
-	appearance: none;
-	border: none;
-	background-color: transparent;
 	color: white;
 	font-size: 350%;
 	font-weight: 500;
 	transition: color 0.3s;
-	cursor: pointer;
 	&:hover {
 		color: #e0f1fc;
 	}
 }
 
 button.themed-btn {
-	appearance: none;
 	border: 2px solid rgba(0, 0, 0, 0.3);
 	padding: 0.5rem 2rem;
 	border-radius: 1rem;
@@ -110,7 +118,6 @@ button.themed-btn {
 	font-size: 250%;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 	transition: background-color 0.3s, box-shadow 0.3s;
-	cursor: pointer;
 	&:enabled:hover {
 		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 		background-color: #f7f275;
