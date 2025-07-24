@@ -6,22 +6,29 @@
 		<title>Obstacle Course Game</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!-- The font used for the app. You can change this to any other font. -->
 		<link href="https://fonts.googleapis.com/css2?family=Playpen+Sans:wght@100..800&display=swap" rel="stylesheet" />
+		<!-- This line loads the CSS file containing the styles -->
 		<link rel="stylesheet" href="./index.css" />
 	</head>
 	<body>
 		<main>
+			<!-- Main menu page -->
 			<section id="top-page">
 				<h1>Obstacle Course Game</h1>
 				<button id="btn-start" class="themed-btn">Start</button>
 				<button id="btn-levels" class="themed-btn">Levels</button>
 			</section>
+
+			<!-- Game playing page -->
 			<section id="game-page" hidden>
 				<button id="btn-exit" title="Exit">×</button>
+				<!-- Game information display -->
 				<div id="game-info">
 					<div>Level: <span id="level">1</span></div>
 					<div>Score: <span id="score">0</span></div>
 				</div>
+				<!-- 3D game stage -->
 				<div id="stage">
 					<div id="platform-background"></div>
 					<div id="platform"></div>
@@ -29,6 +36,7 @@
 						<div id="player-inner"></div>
 					</div>
 				</div>
+				<!-- Level completion popup -->
 				<div id="level-completed-modal" hidden>
 					<h3 id="level-completed-title">Level Completed!</h3>
 					<div id="level-completed-actions">
@@ -38,12 +46,15 @@
 					</div>
 				</div>
 			</section>
+
+			<!-- Level selection page -->
 			<section id="levels-page" hidden>
 				<button id="btn-back" title="Back">‹</button>
 				<h2>Stages</h2>
 				<div id="levels-list"></div>
 			</section>
 		</main>
+		<!-- Main JavaScript module -->
 		<script src="./index.js" type="module"></script>
 	</body>
 </html>

@@ -1,3 +1,5 @@
+// Web Worker for converting audio buffers to WAV format - students can ignore this file
+
 addEventListener("message", ({ data: buffer }) => {
 	const nChannels = buffer.numberOfChannels;
 	const sampleRate = buffer.sampleRate;

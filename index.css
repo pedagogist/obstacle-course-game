@@ -48,7 +48,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 /* End of CSS reset */
 
-/* Constants */
+/* Game dimension constants */
 :root {
 	--platform-tilt: rotateX(65deg);
 
@@ -61,7 +61,7 @@ h1, h2, h3, h4, h5, h6 {
 	--player-depth: 18rem;
 }
 
-/* Applies a custom font and centers the page using a grid layout. */
+/* Base layout and typography */
 html {
 	font-family: "Playpen Sans", fantasy;
 	font-size: clamp(12px, 0.5vw + 9.6px, 16px);
@@ -77,6 +77,7 @@ body, main {
 	display: contents;
 }
 
+/* Page section styling */
 section {
 	background-color: #a7d6fb;
 	position: relative;
@@ -91,6 +92,7 @@ section {
 	overflow: hidden;
 }
 
+/* Typography styles */
 h1 {
 	font-size: 300%;
 }
@@ -99,6 +101,7 @@ h2, h3 {
 	font-size: 200%;
 }
 
+/* Basic button styles */
 button {
 	color: white;
 	font-size: 350%;
@@ -109,6 +112,7 @@ button {
 	}
 }
 
+/* Themed button styling */
 button.themed-btn {
 	border: 2px solid rgba(0, 0, 0, 0.3);
 	padding: 0.5rem 2rem;
@@ -128,6 +132,7 @@ button.themed-btn {
 	}
 }
 
+/* Navigation button positioning */
 #btn-back, #btn-exit {
 	position: absolute;
 	top: 1.5rem;
@@ -137,6 +142,7 @@ button.themed-btn {
 	line-height: 1;
 }
 
+/* Page-specific layouts */
 #top-page {
 	align-content: center;
 }
@@ -149,6 +155,7 @@ button.themed-btn {
 	align-content: start;
 }
 
+/* Level selection grid */
 #levels-list {
 	display: flex;
 	gap: 1rem;
@@ -160,8 +167,7 @@ button.themed-btn {
 	height: 6rem;
 }
 
-/* ------------------------------ */
-
+/* Game UI elements */
 #game-info {
 	position: absolute;
 	top: 2rem;
@@ -176,6 +182,7 @@ button.themed-btn {
 	font-weight: normal;
 }
 
+/* 3D game stage setup */
 #stage {
 	position: absolute;
 	top: 0;
@@ -186,6 +193,7 @@ button.themed-btn {
 	perspective-origin: bottom center;
 }
 
+/* Background of the main game platform */
 #platform-background {
 	position: absolute;
 	inset: -9999px 0 0;
@@ -195,6 +203,7 @@ button.themed-btn {
 	transform-origin: bottom center;
 }
 
+/* Main game platform */
 #platform {
 	position: absolute;
 	inset: 0;
@@ -202,6 +211,7 @@ button.themed-btn {
 	transform-origin: bottom center;
 }
 
+/* Player and obstacle positioning system */
 #player, .obstacle {
 	position: absolute;
 	left: calc(var(--lane-index) / var(--n-lanes) * 100%);
@@ -211,9 +221,12 @@ button.themed-btn {
 	transform-style: preserve-3d;
 }
 
+/* Player styling and positioning */
 #player {
 	bottom: 1rem;
 }
+
+/* Player blink animation when hit */
 @keyframes blink {
 	0%, 100% {
 		visibility: visible;
@@ -234,10 +247,12 @@ button.themed-btn {
 	border-radius: 50%;
 }
 
+/* 3D obstacle positioning */
 .obstacle {
 	transform: translateZ(calc(var(--obstacle-height) / 2));
 }
 
+/* Base styling for all obstacle faces */
 .obstacle-face {
 	position: absolute;
 	padding: 0.5rem;
@@ -246,11 +261,10 @@ button.themed-btn {
 	color: white;
 	text-align: center;
 	transform-style: preserve-3d;
-	/* backface-visibility: hidden; */
-	/* box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2); */
 	--translateY: translateY(calc(var(--obstacle-height) / 2 - var(--obstacle-depth)));
 }
 
+/* Individual 3D obstacle face positioning */
 .obstacle-face-front {
 	width: var(--obstacle-width);
 	height: var(--obstacle-height);
@@ -287,10 +301,12 @@ button.themed-btn {
 	transform: var(--translateY) translateX(calc(3 / 2 / var(--n-lanes) * var(--obstacle-width))) rotateY(90deg);
 }
 
+/* Correct answer obstacle styling */
 .correct-word .obstacle-face {
 	background-color: rgba(85, 243, 140, 0.5);
 }
 
+/* Level completion popup */
 #level-completed-modal {
 	background-color: rgba(105, 165, 211, 0.7);
 	color: white;

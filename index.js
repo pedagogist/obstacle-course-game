@@ -1,23 +1,29 @@
+// Import game data and speech recognition functionality
 import example from "./data/example.json" with { type: "json" };
 import listenToWords from "./listen-to-words.js";
 
+// Game configuration constants
 const sectionDepth = 120;
 const slowMovingSpeed = 0.2;
 const fastMovingSpeed = 1;
 
+// Get CSS custom property values for game dimensions
 const rootElementStyle = getComputedStyle(document.documentElement);
 const obstacleDepth = parseFloat(rootElementStyle.getPropertyValue("--obstacle-depth"));
 const playerDepth = parseFloat(rootElementStyle.getPropertyValue("--player-depth"));
 
+// Get references to page elements
 const topPage = document.getElementById("top-page");
 const gamePage = document.getElementById("game-page");
 const levelsPage = document.getElementById("levels-page");
 
+// Get references to navigation buttons
 const btnStart = document.getElementById("btn-start");
 const btnLevels = document.getElementById("btn-levels");
 const btnExit = document.getElementById("btn-exit");
 const btnBack = document.getElementById("btn-back");
 
+// Navigation event handlers - Show the corresponding game page when each button is clicked
 btnStart.addEventListener("click", () => {
 	topPage.hidden = true;
 	gamePage.hidden = false;
@@ -43,12 +49,14 @@ btnBack.addEventListener("click", () => {
 	topPage.hidden = false;
 });
 
+// Get references to level completion modal elements
 const btnRetry = document.getElementById("btn-retry");
 const btnNextLevel = document.getElementById("btn-next-level");
 const btnBackToTop = document.getElementById("btn-back-to-top");
 const levelCompletedModal = document.getElementById("level-completed-modal");
 const levelCompletedTitle = document.getElementById("level-completed-title");
 
+// Level completion modal event handlers - Perform the corresponding action when each button is clicked
 btnRetry.addEventListener("click", () => {
 	levelCompletedModal.hidden = true;
 	setupStageAndStart();
@@ -69,6 +77,7 @@ btnBackToTop.addEventListener("click", () => {
 	gamePage.hidden = true;
 });
 
+// Get references to game UI elements
 const levelElement = document.getElementById("level");
 
 let score = 0;
@@ -77,6 +86,7 @@ const scoreElement = document.getElementById("score");
 const platform = document.getElementById("platform");
 const player = document.getElementById("player");
 
+// Game state variables
 let unlockedLevel = parseInt(localStorage.getItem("unlockedLevel") || "1", 10);
 let currentLevel = unlockedLevel;
 let currentLevelData;
@@ -85,6 +95,9 @@ let currentNLanes = 0;
 let currentCorrectIndices = [];
 let speechRecognitionAbortController;
 
+/**
+ * Initializes the game stage and starts a new level
+ */
 function setupStageAndStart() {
 	// Abort any ongoing speech recognition
 	speechRecognitionAbortController?.abort();
@@ -103,6 +116,7 @@ function setupStageAndStart() {
 		const correctWordIndex = shuffleAndReturnFirstIndex(words);
 		currentCorrectIndices[sectionIndex] = correctWordIndex;
 
+		// Create 3D obstacles for each word in the section
 		for (const [wordIndex, word] of words.entries()) {
 			const obstacle = document.createElement("div");
 			obstacle.classList.add("obstacle");
@@ -112,13 +126,12 @@ function setupStageAndStart() {
 			obstacle.style.setProperty("--n-lanes", words.length);
 			platform.appendChild(obstacle);
 
+			// Create all six faces of the 3D obstacle
 			const faces = ["front", "back", "left", "right", "top", "bottom"];
 			for (const faceName of faces) {
 				const face = document.createElement("div");
 				face.classList.add("obstacle-face", `obstacle-face-${faceName}`);
-				// if (faceName === "front") {
 				face.textContent = word;
-				// }
 				obstacle.appendChild(face);
 			}
 		}
@@ -133,6 +146,9 @@ function setupStageAndStart() {
 	startSpeechRecognition();
 }
 
+/**
+ * Positions the player in a random lane that is not the correct answer
+ */
 function positionPlayer() {
 	currentNLanes = currentLevelData[currentSection].length;
 	let playerLane = Math.floor(Math.random() * (currentNLanes - 1));
@@ -141,14 +157,20 @@ function positionPlayer() {
 	player.style.setProperty("--n-lanes", currentNLanes);
 }
 
+// Game animation state variables
 let currentSectionCorrect = false;
 let platformY = 0;
 
+/**
+ * Updates the game state every frame, handling platform movement and collision detection
+ */
 function updateGameState() {
 	platformY += currentSectionCorrect ? fastMovingSpeed : slowMovingSpeed;
 	platform.style.transform = `var(--platform-tilt) translateY(${platformY}rem)`;
 	const nextSectionY = (currentSection + 1) * sectionDepth;
+
 	if (currentSectionCorrect) {
+		// Move to next section when obstacle is passed
 		if (platformY >= nextSectionY + obstacleDepth) {
 			currentSection++;
 			if (currentSection < currentLevelData.length) {
@@ -178,6 +200,7 @@ function updateGameState() {
 			}
 		}
 	} else {
+		// Handle collision with obstacle when player doesn't move to correct lane
 		if (platformY >= nextSectionY - playerDepth) {
 			platformY = currentSection * sectionDepth + obstacleDepth;
 			score = Math.max(0, score - 1);
@@ -191,6 +214,9 @@ function updateGameState() {
 	requestAnimationFrame(updateGameState);
 }
 
+/**
+ * Starts speech recognition for the current section and handles player movement based on recognized words
+ */
 async function startSpeechRecognition() {
 	if (currentSectionCorrect) return;
 	try {
@@ -220,7 +246,7 @@ async function startSpeechRecognition() {
 }
 
 /*
-// For debugging
+// Allows controlling with number row keys for debugging
 document.addEventListener("keydown", event => {
 	if (currentSectionCorrect) return;
 	const key = parseInt(event.key, 10);
@@ -236,6 +262,9 @@ document.addEventListener("keydown", event => {
 });
 */
 
+/**
+ * Randomize the order of the elements of an array and returns the index of the first element after shuffling
+ */
 function shuffleAndReturnFirstIndex(array) {
 	let firstIndex = 0; // The first element is always the correct word
 	for (let i = array.length - 1; i > 0; i--) {
@@ -246,8 +275,12 @@ function shuffleAndReturnFirstIndex(array) {
 	return firstIndex;
 }
 
+// Level selection functionality
 const levelsList = document.getElementById("levels-list");
 
+/**
+ * Loads and displays all available levels in the levels page
+ */
 function loadLevels() {
 	levelsList.textContent = "";
 	for (let i = 1; i <= example.length; i++) {

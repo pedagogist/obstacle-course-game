@@ -1,13 +1,19 @@
+// Speech recognition functionality using either browser API or Google Cloud API
+
 // Use API key from URL query if available
 const googleCloudApiKey = new URLSearchParams(location.search).get("apiKey");
 const speechRecognitionApiUrl = `https://speech.googleapis.com/v1/speech:recognize?key=${googleCloudApiKey}`;
 
 let audioInputStream;
 
+// Audio processing thresholds
 const speakingThreshold = -15;
 const silenceThreshold = -20;
 const silenceDuration = 0.5;
 
+/**
+ * Main speech recognition function that chooses between browser API or Google Cloud API
+ */
 export default async function listenToWords(words, abortSignal) {
 	// Check if we should use the browser's Speech Recognition API
 	if (googleCloudApiKey) {
@@ -23,6 +29,9 @@ export default async function listenToWords(words, abortSignal) {
 	}
 }
 
+/**
+ * Speech recognition using the browser's built-in Web Speech API
+ */
 function useBrowserSpeechRecognition(words, abortSignal) {
 	const { promise, resolve, reject } = Promise.withResolvers();
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -33,8 +42,8 @@ function useBrowserSpeechRecognition(words, abortSignal) {
 	recognition.interimResults = true;
 	recognition.maxAlternatives = 5;
 
+	// Set up grammar list for better word recognition accuracy (Some browsers may support it in the future)
 	if (words?.length) {
-		// Some browsers may support grammar lists in the future for better accuracy
 		const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
 		if (SpeechGrammarList) {
 			const grammarList = new SpeechGrammarList();
@@ -53,6 +62,7 @@ function useBrowserSpeechRecognition(words, abortSignal) {
 		});
 	}
 
+	// Process speech recognition results
 	recognition.addEventListener("result", event => {
 		for (const result of event.results) {
 			for (const alternative of result) {
@@ -67,6 +77,7 @@ function useBrowserSpeechRecognition(words, abortSignal) {
 		}
 	});
 
+	// Handle recognition errors
 	recognition.addEventListener("error", event => {
 		reject(new Error(`Speech recognition error: ${event.error}`));
 	});
@@ -80,7 +91,11 @@ function useBrowserSpeechRecognition(words, abortSignal) {
 	return promise;
 }
 
+/**
+ * Speech recognition using Google Cloud Speech-to-Text API with real-time audio processing
+ */
 function useGoogleCloudSpeechRecognition(words, abortSignal) {
+	// Set up audio context and analysis
 	const audioContext = new AudioContext();
 	const source = audioContext.createMediaStreamSource(audioInputStream);
 	const analyser = audioContext.createAnalyser();
@@ -90,6 +105,8 @@ function useGoogleCloudSpeechRecognition(words, abortSignal) {
 
 	const { promise, resolve, reject } = Promise.withResolvers();
 	const mediaRecorder = new MediaRecorder(audioInputStream);
+	
+	// Process recorded audio when available
 	mediaRecorder.addEventListener("dataavailable", async event => {
 		const trimmedAudioBlob = await trimAudio(audioContext, event.data, speakingStartTime, speakingEndTime);
 		const audioBase64 = await blobToBase64(trimmedAudioBlob);
@@ -117,6 +134,8 @@ function useGoogleCloudSpeechRecognition(words, abortSignal) {
 	let silenceTimeout;
 	let speakingStartTime;
 	let speakingEndTime;
+	
+	// Monitor audio volume to detect when user starts and stops speaking
 	function monitorVolume() {
 		analyser.getByteTimeDomainData(dataArray);
 		let sum = 0;
@@ -146,6 +165,9 @@ function useGoogleCloudSpeechRecognition(words, abortSignal) {
 	return promise;
 }
 
+/**
+ * Converts a Blob to base64 string for API transmission
+ */
 function blobToBase64(blob) {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -155,6 +177,9 @@ function blobToBase64(blob) {
 	});
 }
 
+/**
+ * Sends audio data to Google Cloud Speech-to-Text API for transcription
+ */
 async function sendToSpeechToTextAPI(audioBase64, words) {
 	const requestBody = {
 		config: {
@@ -185,6 +210,9 @@ async function sendToSpeechToTextAPI(audioBase64, words) {
 	return data?.results[0]?.alternatives[0]?.transcript;
 }
 
+/**
+ * Trims audio to only include the spoken portion
+ */
 async function trimAudio(audioContext, blob, startTime, endTime) {
 	const arrayBuffer = await blob.arrayBuffer();
 	const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -201,7 +229,12 @@ async function trimAudio(audioContext, blob, startTime, endTime) {
 	return bufferToWave(trimmedBuffer);
 }
 
+// Worker for converting audio buffer to WAV format
 const worker = new Worker("./buffer-to-wave.js");
+
+/**
+ * Converts an audio buffer to WAV format using a web worker
+ */
 function bufferToWave(buffer) {
 	return new Promise(resolve => {
 		worker.addEventListener("message", ({ data }) => resolve(data), { once: true });
